@@ -26,7 +26,19 @@ func connectDB() {
 		log.Fatal(err)
 	}
 }
+
+// ✅ CORS middleware
+func enableCors(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "https://govuepracticeclient.netlify.app")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+}
+
 func helloHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(w)
+	if r.Method == http.MethodOptions {
+		return
+	}
 	response := map[string]string{
 		"message":    "hellow",
 		"serverTime": time.Now().Format(time.RFC3339),
@@ -34,6 +46,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	rows, _ := db.Query("SELECT id, name, email FROM users")
 	var users []User
@@ -67,6 +80,10 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(w)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		switch r.Method {
 		case "GET":
 			getUsers(w, r)
@@ -76,8 +93,9 @@ func main() {
 			deleteUser(w, r)
 		}
 	})
-	// ✅ Register the hello handler
+
 	http.HandleFunc("/api/hello", helloHandler)
+
 	fmt.Println("Go API running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
