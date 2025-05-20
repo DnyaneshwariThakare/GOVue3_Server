@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -25,7 +26,14 @@ func connectDB() {
 		log.Fatal(err)
 	}
 }
-
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	response := map[string]string{
+		"message":    "hellow",
+		"serverTime": time.Now().Format(time.RFC3339),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	rows, _ := db.Query("SELECT id, name, email FROM users")
 	var users []User
@@ -68,7 +76,8 @@ func main() {
 			deleteUser(w, r)
 		}
 	})
-
+	// ✅ Register the hello handler
+	http.HandleFunc("/api/hello", helloHandler)
 	fmt.Println("Go API running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
