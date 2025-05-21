@@ -40,7 +40,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response := map[string]string{
-		"message":    "hellow",
+		"message":    "hellow123",
 		"serverTime": time.Now().Format(time.RFC3339),
 	}
 	w.Header().Set("Content-Type", "application/json")
